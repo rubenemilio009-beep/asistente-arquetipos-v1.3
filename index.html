@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Asistente de Arquetipos SGC</title>
+    <!-- Tailwind CSS CDN para un estilo moderno y responsivo -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Estilos personalizados para la tipografía y el fondo */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* Color de fondo gris claro */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+        /* Estilo para el contenedor principal de la aplicación */
+        #app-container {
+            width: 100%;
+            max-width: 800px;
+        }
+        /* Ocultar elementos de radio por defecto */
+        input[type="radio"] {
+            display: none;
+        }
+        /* Estilo para el botón de radio personalizado */
+        .custom-radio {
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            border-radius: 9999px; /* Bordes completamente redondeados */
+            border: 1px solid #d1d5db; /* Borde gris claro */
+            transition: all 0.2s ease-in-out;
+            user-select: none; /* Evita la selección de texto */
+        }
+        /* Estilo para el botón de radio seleccionado */
+        input[type="radio"]:checked + .custom-radio {
+            background-color: #10b981; /* Verde esmeralda */
+            color: #fff;
+            border-color: #059669; /* Borde verde más oscuro */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+
+    <!-- Contenedor principal de la aplicación -->
+    <div id="app" class="bg-white p-8 sm:p-10 rounded-3xl shadow-2xl w-full max-w-4xl mx-auto flex flex-col items-center">
+        <!-- El contenido se renderizará aquí dinámicamente con JavaScript -->
+    </div>
+
+    <!-- Modal personalizado para mensajes, en lugar de alert() -->
+    <div id="message-box" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden items-center justify-center p-4" onclick="this.classList.add('hidden')">
+        <div class="bg-white p-6 rounded-2xl shadow-xl max-w-sm w-full text-center transform transition-all duration-300 scale-95" onclick="event.stopPropagation()">
+            <p id="message-text" class="text-lg font-medium text-gray-800 mb-4"></p>
+            <button onclick="document.getElementById('message-box').classList.add('hidden')" class="bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-full hover:bg-gray-300 transition-colors">Cerrar</button>
+        </div>
+    </div>
+
+    <script>
+        // La lógica de la aplicación se encuentra en este script
+        
+        // --- 1. Definición de la Lógica y los Datos ---
+        
+        // Estructura de datos para los arquetipos y sus preguntas
+        const archetypes = [
+            {
+                name: "Transporte",
+                title: "Revisando Arquetipo de Transporte...",
+                questions: [
+                    "¿El servicio o el personal se enmarcan en el Convenio Colectivo de Trabajo 40/89 (Transporte Automotor de Cargas)?",
+                    "¿El servicio utiliza vehículos habilitados para transporte de carga, con choferes registrados y seguros correspondientes?",
+                    "¿La actividad incluye traslados interprovinciales o internacionales que requieran gestión de viáticos y control de jornada?",
+                    "¿Se requiere llevar una planilla de control de kilómetros, un registro de carga/descarga o el uso de elementos de seguridad específicos del vehículo?",
+                    "¿El personal contratado cumple principalmente funciones como chofer, peón de carga, custodio de mercadería o operador logístico?"
+                ]
+            },
+            {
+                name: "UOCRA",
+                title: "Revisando Arquetipo UOCRA...",
+                questions: [
+                    "¿El personal está encuadrado bajo el Convenio Colectivo de Trabajo 76/75 (UOCRA)?",
+                    "¿Las tareas a realizar incluyen obra civil, montaje, excavación, demolición o instalaciones técnicas (eléctricas, sanitarias, etc.)?",
+                    "¿Se ejecutarán trabajos físicos en la planta, campo o sobre la infraestructura, con intervención de gremios de la construcción?",
+                    "¿Para contratar al personal, se debe recurrir a la Bolsa de Trabajo de la UOCRA?",
+                    "¿La actividad está explícitamente alcanzada por el Decreto 911/96 y exige la presentación de un Programa de Seguridad e Higiene específico para la construcción?"
+                ]
+            },
+            {
+                name: "Transporte Extranjero",
+                title: "Revisando Arquetipo Transporte Extranjero...",
+                questions: [
+                    "¿El servicio implica el cruce de fronteras o el transporte entre países, requiriendo documentación aduanera?",
+                    "¿El personal que realiza el transporte es extranjero y cuenta con residencia legal, CUIL y ART vigente en Argentina para esta tarea?",
+                    "¿Se requiere un seguro de accidentes personales para el personal de transporte debido a que no tienen una relación laboral directa en Argentina?",
+                    "¿La empresa contratista está registrada como operador de transporte internacional o su sede principal está en el extranjero?",
+                    "¿Aplican normas de reciprocidad o convenios bilaterales entre países para la regulación laboral o previsional del servicio?"
+                ]
+            },
+            {
+                name: "Extranjeros",
+                title: "Revisando Arquetipo Extranjeros...",
+                questions: [
+                    "¿El personal que realizará tareas operativas en planta o campo es extranjero y posee residencia (precaria o permanente), CUIL y ART activa?",
+                    "¿La empresa contratista tuvo que cumplir con requisitos migratorios y laborales específicos en Argentina para traer a este personal?",
+                    "¿Se deben verificar licencias, seguros o certificados técnicos emitidos en el país de origen del personal o la empresa?",
+                    "¿La actividad implica tareas operativas realizadas por extranjeros pero NO es un servicio de visita técnica, ni de transporte, ni de construcción (UOCRA)?"
+                ]
+            },
+            {
+                name: "sin Programa de Seguridad",
+                title: "Revisando Arquetipo sin Programa de Seguridad...",
+                questions: [
+                    "¿El servicio consiste en la toma de inventarios, relevamientos o auditorías?",
+                    "¿Las tareas son de servicios profesionales como consultoría, capacitación o traducción?",
+                    "¿La actividad principal es la limpieza y mantenimiento de oficinas, comedores o áreas administrativas?",
+                    "¿El servicio incluye actividades de bienestar, recreación o deportes para el personal?"
+                ]
+            },
+            {
+                name: "con Programa de Seguridad e Higiene (PSH)",
+                title: "Revisando Arquetipo con Programa de Seguridad e Higiene...",
+                questions: [
+                    "¿La tarea implica riesgos físicos, químicos o eléctricos que requieren un plan de prevención formal?",
+                    "¿Se realizarán trabajos en altura, en espacios confinados, con energías peligrosas o se utilizará maquinaria pesada?",
+                    "¿La ART (Aseguradora de Riesgos del Trabajo) ha solicitado la presentación de un Relevamiento de Agentes de Riesgo (RAR) o de Riesgos Generales (RGRL) para este servicio?",
+                    "¿La actividad, por su naturaleza y según la Ley 19.587 y su Decreto 351/79, exige la elaboración de un Programa de Seguridad e Higiene aunque no sea del rubro de la construcción?"
+                ]
+            }
+        ];
+
+        // --- 2. Variables de Estado Globales ---
+        let currentStep = 0;
+        let contractData = {};
+        let identifiedArchetype = null;
+        let confirmationCriterion = null;
+        let userAnswers = {}; // Almacenará las respuestas del usuario para cada paso
+
+        const appDiv = document.getElementById('app');
+
+        // --- 3. Funciones de Renderizado de la UI ---
+        
+        // Renderiza la pantalla de inicio
+        function renderInitialScreen() {
+            appDiv.innerHTML = `
+                <div class="text-center">
+                    <h1 class="text-4xl sm:text-5xl font-extrabold text-gray-900 mb-6 tracking-tight">Asistente de Clasificación de Arquetipos SGC</h1>
+                    <p class="text-lg text-gray-600 max-w-2xl mx-auto mb-8 font-medium">
+                        Bienvenido. Esta herramienta le ayudará a identificar el arquetipo correcto para el servicio a contratar. Lea atentamente cada pregunta. Con una sola respuesta afirmativa ('Sí'), el arquetipo quedará definido. Proceda en el orden presentado.
+                    </p>
+                    <form id="start-form" class="space-y-4 text-left p-6 bg-gray-50 rounded-2xl">
+                        <div>
+                            <label for="oc-number" class="block text-sm font-semibold text-gray-700">Nº de Contrato/OC:</label>
+                            <input type="text" id="oc-number" class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 transition duration-150 p-2">
+                        </div>
+                        <div>
+                            <label for="contractor" class="block text-sm font-semibold text-gray-700">Contratista:</label>
+                            <input type="text" id="contractor" class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 transition duration-150 p-2">
+                        </div>
+                        <div>
+                            <label for="description" class="block text-sm font-semibold text-gray-700">Descripción breve del servicio:</label>
+                            <textarea id="description" rows="3" class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 transition duration-150 p-2"></textarea>
+                        </div>
+                    </form>
+                    <button id="start-button" class="mt-8 px-8 py-4 bg-emerald-500 text-white font-bold rounded-full text-xl shadow-lg hover:bg-emerald-600 transform transition-transform duration-200 hover:scale-105 focus:outline-none focus:ring-4 focus:ring-emerald-300">
+                        Comenzar
+                    </button>
+                </div>
+            `;
+            // Añade el evento para el botón de inicio
+            document.getElementById('start-button').addEventListener('click', () => {
+                // Guarda los datos del formulario
+                contractData = {
+                    ocNumber: document.getElementById('oc-number').value,
+                    contractor: document.getElementById('contractor').value,
+                    description: document.getElementById('description').value
+                };
+                renderQuestionScreen(archetypes[currentStep]);
+            });
+        }
+
+        // Renderiza la pantalla de preguntas para un arquetipo específico
+        function renderQuestionScreen(archetype) {
+            // Desplaza la ventana a la parte superior para mostrar las preguntas
+            window.scrollTo(0, 0);
+
+            // Cargar respuestas previas o inicializar a un objeto vacío
+            const currentAnswers = userAnswers[currentStep] || {};
+
+            let questionsHtml = archetype.questions.map((q, index) => `
+                <div class="mb-4 bg-gray-50 p-6 rounded-xl border border-gray-200">
+                    <p class="font-medium text-gray-800 mb-3 text-lg">${q}</p>
+                    <div class="flex items-center space-x-4">
+                        <label class="flex items-center">
+                            <input type="radio" name="q-${currentStep}-${index}" value="yes" class="form-radio" data-question-index="${index}" ${currentAnswers[index] === 'yes' ? 'checked' : ''}>
+                            <span class="custom-radio ml-2 text-gray-700">Sí</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="radio" name="q-${currentStep}-${index}" value="no" class="form-radio" data-question-index="${index}" ${currentAnswers[index] === 'no' ? 'checked' : ''}>
+                            <span class="custom-radio ml-2 text-gray-700">No</span>
+                        </label>
+                    </div>
+                </div>
+            `).join('');
+
+            appDiv.innerHTML = `
+                <div class="w-full text-center">
+                    <h2 class="text-3xl font-extrabold text-gray-900 mb-6">${archetype.title}</h2>
+                    <p class="text-gray-600 text-lg mb-8 font-medium">Responda 'Sí' a cualquiera de las siguientes afirmaciones si aplica al servicio:</p>
+                    <div id="questions-container" class="space-y-4 text-left">
+                        ${questionsHtml}
+                    </div>
+                    <div class="flex justify-between mt-8">
+                        ${currentStep > 0 ? `<button onclick="goBack()" class="px-6 py-3 bg-gray-200 text-gray-800 font-bold rounded-full shadow-lg hover:bg-gray-300 transition-colors focus:outline-none">Volver</button>` : '<div></div>'}
+                        <button id="continue-button" class="px-6 py-3 bg-gray-400 text-white font-bold rounded-full shadow-lg cursor-not-allowed">
+                            Revisar y Continuar
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            // Añade los eventos para los botones de radio
+            document.querySelectorAll('input[type="radio"]').forEach(radio => {
+                radio.addEventListener('change', (event) => {
+                    handleAnswer(event.target.value, parseInt(event.target.dataset.questionIndex));
+                });
+            });
+
+            // Añade el evento para el botón de continuar
+            document.getElementById('continue-button').addEventListener('click', checkAndAdvance);
+
+            // Comprueba si el botón de continuar debe estar habilitado al cargar
+            checkIfContinueButtonShouldBeEnabled();
+        }
+
+        // Renderiza la pantalla de resultado final
+        function renderResultScreen(type, archetype, confirmationText) {
+            appDiv.innerHTML = `
+                <div class="w-full text-center">
+                    ${type === 'identified' ? `
+                        <h2 class="text-3xl sm:text-4xl font-extrabold text-emerald-600 mb-4 tracking-tight">¡Arquetipo Identificado!</h2>
+                        <div class="bg-green-50 p-8 rounded-3xl shadow-lg border border-green-200">
+                            <p class="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Arquetipo: <span class="text-emerald-700">${archetype}</span></p>
+                            <p class="text-lg text-gray-600 mt-4 leading-relaxed">${confirmationText}</p>
+                        </div>
+                        <button id="generate-summary-btn" class="mt-8 px-8 py-4 bg-gray-200 text-gray-800 font-bold rounded-full text-lg shadow-lg hover:bg-gray-300 transition-colors focus:outline-none focus:ring-4 focus:ring-gray-300">
+                            Generar Resumen
+                        </button>
+                    ` : `
+                        <h2 class="text-3xl sm:text-4xl font-extrabold text-red-600 mb-4 tracking-tight">Arquetipo no identificado automáticamente</h2>
+                        <div class="bg-red-50 p-8 rounded-3xl shadow-lg border border-red-200 text-left">
+                            <p class="text-lg text-gray-700 leading-relaxed font-medium">
+                                De acuerdo a la normativa, en los casos donde la actividad no se encuadra en un arquetipo predefinido, será la ART (Aseguradora de Riesgos del Trabajo) quien defina si es aplicable (o no) el desarrollo de un Programa de Seguridad e Higiene.
+                            </p>
+                            <p class="text-lg text-gray-700 leading-relaxed font-bold mt-4">
+                                Deberá indicar -a <a href="mailto:soporte@minexus.net" class="text-blue-600 hover:underline">soporte@minexus.net</a>- "Arquetipo con Programa de Seguridad e Higiene".
+                            </p>
+                            <p class="text-lg text-gray-700 leading-relaxed font-medium mt-4">
+                                Por favor, gestione esta consulta con la ART. Una vez que obtenga el certificado o la constancia de la ART, deberá subir dicho documento en el ítem correspondiente al "Programa de Seguridad e Higiene" en el sistema SGC Minexus.
+                            </p>
+                            <p class="text-lg text-gray-700 leading-relaxed font-medium mt-4">
+                                Si persisten las dudas, consultas en relación a esta definición, dirigirlas a Relaciones Laborales, a través de alguno de sus representantes (<a href="mailto:Daniel.coulon@riotinto.com" class="text-blue-600 hover:underline">Daniel.coulon@riotinto.com</a>).
+                            </p>
+                        </div>
+                    `}
+                    <button onclick="restartApp()" class="mt-8 px-8 py-4 bg-emerald-500 text-white font-bold rounded-full text-lg shadow-lg hover:bg-emerald-600 transform transition-transform duration-200 hover:scale-105 focus:outline-none focus:ring-4 focus:ring-emerald-300">
+                        Volver a Empezar
+                    </button>
+                </div>
+            `;
+
+            if (type === 'identified') {
+                document.getElementById('generate-summary-btn').addEventListener('click', generateSummary);
+            }
+        }
+        
+        // Muestra un modal de mensaje
+        function showMessage(text) {
+            const messageBox = document.getElementById('message-box');
+            document.getElementById('message-text').textContent = text;
+            messageBox.classList.remove('hidden');
+            messageBox.classList.add('flex');
+            // Agrega animación de entrada al modal
+            const modalContent = messageBox.querySelector('div');
+            modalContent.classList.remove('scale-95');
+            modalContent.classList.add('scale-100');
+        }
+
+        // --- 4. Lógica de la Aplicación y Manejo de Eventos ---
+        
+        // Maneja la respuesta del usuario (Sí/No)
+        function handleAnswer(answer, questionIndex) {
+            // Guarda la respuesta para el paso actual
+            if (!userAnswers[currentStep]) {
+                userAnswers[currentStep] = {};
+            }
+            userAnswers[currentStep][questionIndex] = answer;
+            
+            checkIfContinueButtonShouldBeEnabled();
+        }
+
+        // Comprueba si todas las preguntas del paso actual han sido respondidas
+        function checkIfContinueButtonShouldBeEnabled() {
+            const currentArchetype = archetypes[currentStep];
+            const currentAnswers = userAnswers[currentStep] || {};
+            
+            const allQuestionsAnswered = Object.keys(currentAnswers).length === currentArchetype.questions.length;
+            const continueButton = document.getElementById('continue-button');
+            
+            if (continueButton) {
+                if (allQuestionsAnswered) {
+                    continueButton.classList.remove('bg-gray-400', 'cursor-not-allowed');
+                    continueButton.classList.add('bg-emerald-500', 'hover:bg-emerald-600', 'transform', 'transition-transform', 'duration-200', 'hover:scale-105', 'focus:outline-none', 'focus:ring-4', 'focus:ring-emerald-300');
+                    continueButton.disabled = false;
+                } else {
+                    continueButton.classList.add('bg-gray-400', 'cursor-not-allowed');
+                    continueButton.classList.remove('bg-emerald-500', 'hover:bg-emerald-600', 'transform', 'transition-transform', 'duration-200', 'hover:scale-105', 'focus:outline-none', 'focus:ring-4', 'focus:ring-emerald-300');
+                    continueButton.disabled = true;
+                }
+            }
+        }
+
+        // Revisa las respuestas y avanza al siguiente paso
+        function checkAndAdvance() {
+            const currentArchetype = archetypes[currentStep];
+            const answersForCurrentStep = userAnswers[currentStep];
+            
+            let yesFound = false;
+            let confirmationQuestion = '';
+            
+            // Revisa si alguna respuesta fue 'yes'
+            for (const key in answersForCurrentStep) {
+                if (answersForCurrentStep[key] === 'yes') {
+                    yesFound = true;
+                    confirmationQuestion = currentArchetype.questions[key];
+                    break;
+                }
+            }
+            
+            if (yesFound) {
+                // Se encontró un 'Sí', termina el proceso
+                identifiedArchetype = currentArchetype.name;
+                confirmationCriterion = `Se identificó este arquetipo porque: ${confirmationQuestion}`;
+                renderResultScreen('identified', identifiedArchetype, confirmationCriterion);
+            } else {
+                // Todas las respuestas fueron 'No', avanza al siguiente arquetipo
+                currentStep++;
+                if (currentStep < archetypes.length) {
+                    renderQuestionScreen(archetypes[currentStep]);
+                } else {
+                    // Si se terminaron todos los arquetipos sin un 'Sí', muestra el resultado final
+                    renderResultScreen('not-identified');
+                }
+            }
+        }
+        
+        // Vuelve al paso anterior
+        function goBack() {
+            if (currentStep > 0) {
+                currentStep--;
+                renderQuestionScreen(archetypes[currentStep]);
+            } else {
+                restartApp();
+            }
+        }
+
+
+        // Genera un resumen y lo copia al portapapeles
+        function generateSummary() {
+            let summary = `--- Resumen de Clasificación de Arquetipos SGC ---\n\n`;
+            summary += `Nº de Contrato/OC: ${contractData.ocNumber || 'No especificado'}\n`;
+            summary += `Contratista: ${contractData.contractor || 'No especificado'}\n`;
+            summary += `Descripción del servicio: ${contractData.description || 'No especificada'}\n\n`;
+            summary += `Arquetipo Identificado: ${identifiedArchetype}\n`;
+            summary += `Criterio de Confirmación: ${confirmationCriterion}\n`;
+
+            // Copia el texto al portapapeles
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = summary;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            
+            try {
+                const successful = document.execCommand('copy');
+                if (successful) {
+                    showMessage('El resumen ha sido copiado al portapapeles.');
+                } else {
+                    showMessage('Error al copiar el resumen. Por favor, cópielo manualmente.');
+                }
+            } catch (err) {
+                showMessage('Error al copiar el resumen. Por favor, cópielo manualmente.');
+            }
+            
+            document.body.removeChild(tempTextArea);
+        }
+
+        // Reinicia la aplicación al estado inicial
+        function restartApp() {
+            currentStep = 0;
+            contractData = {};
+            identifiedArchetype = null;
+            confirmationCriterion = null;
+            userAnswers = {};
+            renderInitialScreen();
+        }
+
+        // --- 5. Punto de Entrada de la Aplicación ---
+        
+        // Inicia la aplicación al cargar la página
+        window.onload = renderInitialScreen;
+    </script>
+</body>
+</html>
