@@ -212,7 +212,7 @@
                         ${questionsHtml}
                     </div>
                     <div class="flex justify-between mt-8">
-                        ${currentStep > 0 ? <button onclick="goBack()" class="px-6 py-3 bg-gray-200 text-gray-800 font-bold rounded-full shadow-lg hover:bg-gray-300 transition-colors focus:outline-none">Volver</button> : '<div></div>'}
+                        ${currentStep > 0 ? `<button onclick="goBack()" class="px-6 py-3 bg-gray-200 text-gray-800 font-bold rounded-full shadow-lg hover:bg-gray-300 transition-colors focus:outline-none">Volver</button>` : '<div></div>'}
                         <button id="continue-button" class="px-6 py-3 bg-gray-400 text-white font-bold rounded-full shadow-lg cursor-not-allowed">
                             Revisar y Continuar
                         </button>
@@ -341,7 +341,7 @@
             if (yesFound) {
                 // Se encontró un 'Sí', termina el proceso
                 identifiedArchetype = currentArchetype.name;
-                confirmationCriterion = Se identificó este arquetipo porque: ${confirmationQuestion};
+                confirmationCriterion = `Se identificó este arquetipo porque: ${confirmationQuestion}`;
                 renderResultScreen('identified', identifiedArchetype, confirmationCriterion);
             } else {
                 // Todas las respuestas fueron 'No', avanza al siguiente arquetipo
@@ -368,12 +368,12 @@
 
         // Genera un resumen y lo copia al portapapeles
         function generateSummary() {
-            let summary = --- Resumen de Clasificación de Arquetipos SGC ---\n\n;
-            summary += Nº de Contrato/OC: ${contractData.ocNumber || 'No especificado'}\n;
-            summary += Contratista: ${contractData.contractor || 'No especificado'}\n;
-            summary += Descripción del servicio: ${contractData.description || 'No especificada'}\n\n;
-            summary += Arquetipo Identificado: ${identifiedArchetype}\n;
-            summary += Criterio de Confirmación: ${confirmationCriterion}\n;
+            let summary = `--- Resumen de Clasificación de Arquetipos SGC ---\n\n`;
+            summary += `Nº de Contrato/OC: ${contractData.ocNumber || 'No especificado'}\n`;
+            summary += `Contratista: ${contractData.contractor || 'No especificado'}\n`;
+            summary += `Descripción del servicio: ${contractData.description || 'No especificada'}\n\n`;
+            summary += `Arquetipo Identificado: ${identifiedArchetype}\n`;
+            summary += `Criterio de Confirmación: ${confirmationCriterion}\n`;
 
             // Copia el texto al portapapeles
             const tempTextArea = document.createElement('textarea');
