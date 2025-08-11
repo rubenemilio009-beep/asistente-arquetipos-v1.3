@@ -240,9 +240,14 @@
                 <div class="w-full text-center">
                     ${type === 'identified' ? `
                         <h2 class="text-3xl sm:text-4xl font-extrabold text-emerald-600 mb-4 tracking-tight">¡Arquetipo Identificado!</h2>
-                        <div class="bg-green-50 p-8 rounded-3xl shadow-lg border border-green-200">
+                        <div class="bg-green-50 p-8 rounded-3xl shadow-lg border border-green-200 text-left">
                             <p class="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Arquetipo: <span class="text-emerald-700">${archetype}</span></p>
                             <p class="text-lg text-gray-600 mt-4 leading-relaxed">${confirmationText}</p>
+                            <div class="mt-6 pt-4 border-t border-green-200">
+                                <p class="text-sm text-gray-500 italic">
+                                    <strong>Nota:</strong> Use este identificador como guía. El resultado puede no ser 100% preciso ni exhaustivo; verificaciones posteriores podrían indicar rechazos o solicitudes de cambio. Ante dudas, contacte a <a href="mailto:daniel.coulon@riotinto.com" class="text-blue-600 hover:underline">daniel.coulon@riotinto.com</a> y/o al Equipo de Relaciones Laborales de Rincón.
+                                </p>
+                            </div>
                         </div>
                         <button id="generate-summary-btn" class="mt-8 px-8 py-4 bg-gray-200 text-gray-800 font-bold rounded-full text-lg shadow-lg hover:bg-gray-300 transition-colors focus:outline-none focus:ring-4 focus:ring-gray-300">
                             Generar Resumen
@@ -373,7 +378,9 @@
             summary += `Contratista: ${contractData.contractor || 'No especificado'}\n`;
             summary += `Descripción del servicio: ${contractData.description || 'No especificada'}\n\n`;
             summary += `Arquetipo Identificado: ${identifiedArchetype}\n`;
-            summary += `Criterio de Confirmación: ${confirmationCriterion}\n`;
+            summary += `Criterio de Confirmación: ${confirmationCriterion}\n\n`;
+            summary += `Nota: Use este identificador como guía. El resultado puede no ser 100% preciso ni exhaustivo; verificaciones posteriores podrían indicar rechazos o solicitudes de cambio. Ante dudas, contacte a daniel.coulon@riotinto.com y/o al Equipo de Relaciones Laborales de Rincón.`;
+
 
             // Copia el texto al portapapeles
             const tempTextArea = document.createElement('textarea');
