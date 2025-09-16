@@ -51,14 +51,6 @@
         <!-- El contenido se renderizará aquí dinámicamente con JavaScript -->
     </div>
 
-    <!-- Modal personalizado para mensajes, en lugar de alert() -->
-    <div id="message-box" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden items-center justify-center p-4" onclick="this.classList.add('hidden')">
-        <div class="bg-white p-6 rounded-2xl shadow-xl max-w-sm w-full text-center transform transition-all duration-300 scale-95" onclick="event.stopPropagation()">
-            <p id="message-text" class="text-lg font-medium text-gray-800 mb-4"></p>
-            <button onclick="document.getElementById('message-box').classList.add('hidden')" class="bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-full hover:bg-gray-300 transition-colors">Cerrar</button>
-        </div>
-    </div>
-
     <script>
         // La lógica de la aplicación se encuentra en este script
         
@@ -132,7 +124,6 @@
 
         // --- 2. Variables de Estado Globales ---
         let currentStep = 0;
-        let contractData = {};
         let identifiedArchetype = null;
         let confirmationCriterion = null;
         let userAnswers = {}; // Almacenará las respuestas del usuario para cada paso
@@ -149,20 +140,6 @@
                     <p class="text-lg text-gray-600 max-w-2xl mx-auto mb-8 font-medium">
                         Bienvenido. Esta herramienta le ayudará a identificar el arquetipo correcto para el servicio a contratar. Lea atentamente cada pregunta. Con una sola respuesta afirmativa ('Sí'), el arquetipo quedará definido. Proceda en el orden presentado.
                     </p>
-                    <form id="start-form" class="space-y-4 text-left p-6 bg-gray-50 rounded-2xl">
-                        <div>
-                            <label for="oc-number" class="block text-sm font-semibold text-gray-700">Nº de Contrato/OC:</label>
-                            <input type="text" id="oc-number" class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 transition duration-150 p-2">
-                        </div>
-                        <div>
-                            <label for="contractor" class="block text-sm font-semibold text-gray-700">Contratista:</label>
-                            <input type="text" id="contractor" class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 transition duration-150 p-2">
-                        </div>
-                        <div>
-                            <label for="description" class="block text-sm font-semibold text-gray-700">Descripción breve del servicio:</label>
-                            <textarea id="description" rows="3" class="mt-1 block w-full rounded-xl border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 transition duration-150 p-2"></textarea>
-                        </div>
-                    </form>
                     <button id="start-button" class="mt-8 px-8 py-4 bg-emerald-500 text-white font-bold rounded-full text-xl shadow-lg hover:bg-emerald-600 transform transition-transform duration-200 hover:scale-105 focus:outline-none focus:ring-4 focus:ring-emerald-300">
                         Comenzar
                     </button>
@@ -170,12 +147,6 @@
             `;
             // Añade el evento para el botón de inicio
             document.getElementById('start-button').addEventListener('click', () => {
-                // Guarda los datos del formulario
-                contractData = {
-                    ocNumber: document.getElementById('oc-number').value,
-                    contractor: document.getElementById('contractor').value,
-                    description: document.getElementById('description').value
-                };
                 renderQuestionScreen(archetypes[currentStep]);
             });
         }
@@ -240,18 +211,24 @@
                 <div class="w-full text-center">
                     ${type === 'identified' ? `
                         <h2 class="text-3xl sm:text-4xl font-extrabold text-emerald-600 mb-4 tracking-tight">¡Arquetipo Identificado!</h2>
-                        <div class="bg-green-50 p-8 rounded-3xl shadow-lg border border-green-200 text-left">
+                        <div class="bg-green-50 p-8 rounded-3xl shadow-lg border border-green-200 mb-8">
                             <p class="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Arquetipo: <span class="text-emerald-700">${archetype}</span></p>
                             <p class="text-lg text-gray-600 mt-4 leading-relaxed">${confirmationText}</p>
-                            <div class="mt-6 pt-4 border-t border-green-200">
-                                <p class="text-sm text-gray-500 italic">
-                                    <strong>Nota:</strong> Use este identificador como guía. El resultado puede no ser 100% preciso ni exhaustivo; verificaciones posteriores podrían indicar rechazos o solicitudes de cambio. Ante dudas, contacte a <a href="mailto:daniel.coulon@riotinto.com" class="text-blue-600 hover:underline">daniel.coulon@riotinto.com</a> y/o al Equipo de Relaciones Laborales de Rincón.
-                                </p>
-                            </div>
                         </div>
-                        <button id="generate-summary-btn" class="mt-8 px-8 py-4 bg-gray-200 text-gray-800 font-bold rounded-full text-lg shadow-lg hover:bg-gray-300 transition-colors focus:outline-none focus:ring-4 focus:ring-gray-300">
-                            Generar Resumen
-                        </button>
+                        <div class="mt-8 p-6 bg-yellow-50 border-l-4 border-yellow-400 text-left text-yellow-800 rounded-lg">
+                            <h3 class="font-bold text-lg mb-2">Nota Importante</h3>
+                            <ul class="list-disc list-inside space-y-2">
+                                <li>Use esta herramienta como una guía. El resultado puede no ser 100% preciso o exhaustivo.</li>
+                                <li>En caso de precisar releer las opciones, pulse el botón <strong>Volver a Empezar</strong>.</li>
+                                <li>En caso de haberse determinado un arquetipo <strong>SIN programa de Seguridad</strong>, confírmelo vía e-mail con el área de Relaciones Laborales aplicable:
+                                    <ul class="list-disc list-inside ml-6 mt-1">
+                                        <li>Operaciones: <a href="mailto:Daniel.coulon@riotinto.com" class="text-blue-600 hover:underline">Daniel.coulon@riotinto.com</a></li>
+                                        <li>Proyecto: <a href="mailto:Santiago.acevedo@worley.com" class="text-blue-600 hover:underline">Santiago.acevedo@worley.com</a> / <a href="mailto:Miguel.almiron@worley.com" class="text-blue-600 hover:underline">Miguel.almiron@worley.com</a></li>
+                                    </ul>
+                                </li>
+                            </ul>
+                            <p class="mt-4 font-semibold">Muchas gracias.</p>
+                        </div>
                     ` : `
                         <h2 class="text-3xl sm:text-4xl font-extrabold text-red-600 mb-4 tracking-tight">Arquetipo no identificado automáticamente</h2>
                         <div class="bg-red-50 p-8 rounded-3xl shadow-lg border border-red-200 text-left">
@@ -274,24 +251,8 @@
                     </button>
                 </div>
             `;
-
-            if (type === 'identified') {
-                document.getElementById('generate-summary-btn').addEventListener('click', generateSummary);
-            }
         }
         
-        // Muestra un modal de mensaje
-        function showMessage(text) {
-            const messageBox = document.getElementById('message-box');
-            document.getElementById('message-text').textContent = text;
-            messageBox.classList.remove('hidden');
-            messageBox.classList.add('flex');
-            // Agrega animación de entrada al modal
-            const modalContent = messageBox.querySelector('div');
-            modalContent.classList.remove('scale-95');
-            modalContent.classList.add('scale-100');
-        }
-
         // --- 4. Lógica de la Aplicación y Manejo de Eventos ---
         
         // Maneja la respuesta del usuario (Sí/No)
@@ -346,7 +307,7 @@
             if (yesFound) {
                 // Se encontró un 'Sí', termina el proceso
                 identifiedArchetype = currentArchetype.name;
-                confirmationCriterion = `Se identificó este arquetipo porque: ${confirmationQuestion}`;
+                confirmationCriterion = `Se identificó este arquetipo porque: "${confirmationQuestion}"`;
                 renderResultScreen('identified', identifiedArchetype, confirmationCriterion);
             } else {
                 // Todas las respuestas fueron 'No', avanza al siguiente arquetipo
@@ -370,42 +331,9 @@
             }
         }
 
-
-        // Genera un resumen y lo copia al portapapeles
-        function generateSummary() {
-            let summary = `--- Resumen de Clasificación de Arquetipos SGC ---\n\n`;
-            summary += `Nº de Contrato/OC: ${contractData.ocNumber || 'No especificado'}\n`;
-            summary += `Contratista: ${contractData.contractor || 'No especificado'}\n`;
-            summary += `Descripción del servicio: ${contractData.description || 'No especificada'}\n\n`;
-            summary += `Arquetipo Identificado: ${identifiedArchetype}\n`;
-            summary += `Criterio de Confirmación: ${confirmationCriterion}\n\n`;
-            summary += `Nota: Use este identificador como guía. El resultado puede no ser 100% preciso ni exhaustivo; verificaciones posteriores podrían indicar rechazos o solicitudes de cambio. Ante dudas, contacte a daniel.coulon@riotinto.com y/o al Equipo de Relaciones Laborales de Rincón.`;
-
-
-            // Copia el texto al portapapeles
-            const tempTextArea = document.createElement('textarea');
-            tempTextArea.value = summary;
-            document.body.appendChild(tempTextArea);
-            tempTextArea.select();
-            
-            try {
-                const successful = document.execCommand('copy');
-                if (successful) {
-                    showMessage('El resumen ha sido copiado al portapapeles.');
-                } else {
-                    showMessage('Error al copiar el resumen. Por favor, cópielo manualmente.');
-                }
-            } catch (err) {
-                showMessage('Error al copiar el resumen. Por favor, cópielo manualmente.');
-            }
-            
-            document.body.removeChild(tempTextArea);
-        }
-
         // Reinicia la aplicación al estado inicial
         function restartApp() {
             currentStep = 0;
-            contractData = {};
             identifiedArchetype = null;
             confirmationCriterion = null;
             userAnswers = {};
